@@ -1,99 +1,97 @@
 #!/usr/bin/env groovy
 
-node {
-    stage('checkout') {
-        checkout scm
-    }
+// node {
+//     stage('checkout') {
+//         checkout scm
+//     }
 
-    docker.image('maven:3-alpine'){
+//     docker.image('maven:3-alpine'){
 
-        stage('clean') {
-            sh "chmod +x mvnw"
-            sh "./mvnw clean"
-        }
+//         stage('clean') {
+//             sh "chmod +x mvnw"
+//             sh "./mvnw clean"
+//         }
 
-        stage('backend tests') {
-            try {
-                sh "./mvnw test"
-            } catch(err) {
-                throw err
-            } finally {
-                junit '**/target/surefire-reports/TEST-*.xml'
-            }
-        }
+//         stage('backend tests') {
+//             try {
+//                 sh "./mvnw test"
+//             } catch(err) {
+//                 throw err
+//             } finally {
+//                 junit '**/target/surefire-reports/TEST-*.xml'
+//             }
+//         }
 
-        stage('packaging') {
-            sh "./mvnw verify -Pprod -DskipTests"
-            archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
-        }
+//         stage('packaging') {
+//             sh "./mvnw verify -Pprod -DskipTests"
+//             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+//         }
 
-        stage('quality analysis') {
-            withSonarQubeEnv('Sonar') {
-                sh "./mvnw sonar:sonar"
-            }
-        }
-    }
+//         stage('quality analysis') {
+//             withSonarQubeEnv('Sonar') {
+//                 sh "./mvnw sonar:sonar"
+//             }
+//         }
+//     }
 
-    def dockerImage
-    stage('build docker') {
-        sh "cp -R src/main/docker target/"
-        sh "cp target/*.war target/docker/"
-        dockerImage = docker.build('astefanich/handlingeventservice', 'target/docker')
-    }
+//     def dockerImage
+//     stage('build docker') {
+//         sh "cp -R src/main/docker target/"
+//         sh "cp target/*.war target/docker/"
+//         dockerImage = docker.build('astefanich/handlingeventservice', 'target/docker')
+//     }
 
-    stage('publish docker') {
-        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-            dockerImage.push 'latest'
-        }
-    }
-}
+//     stage('publish docker') {
+//         docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+//             dockerImage.push 'latest'
+//         }
+//     }
+// }
 
 
 // #!/usr/bin/env groovy
-// pipeline {
-//     agent { docker 'maven:3-alpine' }
+pipeline {
+    agent { docker 'maven:3-alpine' }
 
-//     stages {
+    stages {
         
-//         stage('Checkout') {
-//             steps {
-//                 checkout scm
-//                 sh "git rev-parse --short HEAD > .git/commit-id"
-//                 commit_id = readFile('.git/commit-id').trim()
-//             }
-//         }
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
-//         stage('Clean'){
-//             steps {
-//                 sh "mvn test"
-//             }
-//         }
+        stage('Clean'){
+            steps {
+                sh "mvn test"
+            }
+        }
 
-//         stage('Test') {
-//             steps {
-//                 sh 'mvn test'
-//             }
-//                 post {
-//                     always {
-//                         junit '**/target/surefire-reports/TEST-*.xml'
-//                     }
-//                 }
-//         }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+                post {
+                    always {
+                        junit '**/target/surefire-reports/TEST-*.xml'
+                    }
+                }
+        }
 
-//         stage('Package'){
-//             steps{
-//                     sh "mvn verify -Pprod -DskipTests"
-//                     archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
-//             } 
-//         }
+        stage('Package'){
+            steps{
+                    sh "mvn verify -Pprod -DskipTests"
+                    archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+            } 
+        }
 
-//         stage('Code Analysis') {
-//             steps {
-//                 withSonarQubeEnv('Sonar') {
-//                     sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
-//                 }
-//             }
-//         }
+        stage('Code Analysis') {
+            steps {
+                withSonarQubeEnv('Sonar') {
+                    sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
+                }
+            }
+        }
 
 //         stage('Docker Build/Push'){
 //             steps{
@@ -104,6 +102,8 @@ node {
 //                 }
 //             }
 //         }
+    }
+}
     
 
 //     } //end of stages
