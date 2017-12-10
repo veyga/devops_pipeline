@@ -4,14 +4,59 @@ pipeline {
 
     stages {
         
-        stage('test') {
-            
+        stage('checkout') {
             steps {
-                sh 'mvn clean test'
+                checkout scm
+                sh "git rev-parse --short HEAD > .git/commit-id"
+                commit_id = readFile('.git/commit-id').trim()
             }
         }
-    }
-}
+
+        stage('clean'){
+            steps {
+                sh "mvn test"
+            }
+        }
+
+        stage('tests') {
+            steps {
+                try {
+                    sh "mvn test"
+                } catch(err) {
+                    throw err
+                } finally {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                }
+            }
+        }
+
+        stage("packaging"){
+            steps{
+                    sh "mvn verify -Pprod -DskipTests"
+                    archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+            } 
+        }
+
+        stage('code analysis') {
+            steps {
+                withSonarQubeEnv('Sonar') {
+                    sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
+                }
+            }
+        }
+
+        stage('docker build/push'){
+            steps{
+                docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
+                    sh "cp -R src/main/docker target/"
+                    sh "cp target/*.war target/docker/"
+                    def app = docker.build("astefanich/bookingservice:${commit_id}", 'target/docker').push()
+                }
+            }
+        }
+    
+    } //end of stages
+} //end of pipeline
 
 // node {
 //     def commit_id
