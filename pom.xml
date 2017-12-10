@@ -29,7 +29,7 @@
 	</properties>
 
 	<scm>
-		<connection>scm:git:github@github.com:astefanich/devops_pipeline.git</connection>
+		<connection>scm:git:git@github.com:astefanich/devops_pipeline.git</connection>
 		<developerConnection>scm:git:git@github.com:astefanich/devops_pipeline.git</developerConnection>
 		<url>git@github.com:astefanich/devops_pipeline.git</url>
 		<tag>HEAD</tag>
@@ -115,7 +115,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-
-
 </project>
