@@ -8,9 +8,10 @@ node {
         commit_id = readFile('.git/commit-id').trim()
     }
 
-    docker.image('openjdk:8').inside('-u root -e MAVEN_OPTS="-Duser.home=./"') {
+    docker.image('maven:3.5.2-jdk-8-alpine'){
         stage('check java') {
             sh "java -version"
+            
         }
 
         stage('clean') {
@@ -33,7 +34,7 @@ node {
             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
         }
 
-        stage('quality analysis') {
+        stage('code analysis') {
             withSonarQubeEnv('Sonar') {
                 sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
             }
