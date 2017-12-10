@@ -1,7 +1,11 @@
 #!/usr/bin/env groovy
+
 node {
+    def commit_id
     stage('checkout') {
         checkout scm
+        sh "git rev-parse --short HEAD > .git/commit-id"
+        commit_id = readFile('.git/commit-id').trim()
     }
 
     docker.image('openjdk:8').inside('-u root -e MAVEN_OPTS="-Duser.home=./"') {
@@ -10,13 +14,13 @@ node {
         }
 
         stage('clean') {
-            sh "chmod +x mvnw"
-            sh "./mvnw clean"
+            // sh "chmod +x mvnw"
+            sh "mvn clean"
         }
 
         stage('backend tests') {
             try {
-                sh "./mvnw test"
+                sh "mvn test"
             } catch(err) {
                 throw err
             } finally {
@@ -25,27 +29,22 @@ node {
         }
 
         stage('packaging') {
-            sh "./mvnw verify -Pprod -DskipTests"
+            sh "mvn verify -Pprod -DskipTests"
             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
         }
 
         stage('quality analysis') {
             withSonarQubeEnv('Sonar') {
-                sh "./mvnw sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
+                sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
             }
         }
     }
 
-    def dockerImage
-    stage('build docker') {
-        sh "cp -R src/main/docker target/"
-        sh "cp target/*.war target/docker/"
-        dockerImage = docker.build('astefanich/bookingservice', 'target/docker')
-    }
-
-    stage('publish docker') {
-        docker.withRegistry('https://registry.hub.docker.com', 'astefanich') {
-            dockerImage.push 'latest'
+    stage('docker build/push'){
+        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
+            sh "cp -R src/main/docker target/"
+            sh "cp target/*.war target/docker/"
+            def app = docker.build("astefanich/bookingservice:${commit_id}", 'target/docker').push()
         }
     }
 }
