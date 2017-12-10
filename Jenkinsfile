@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
     agent {
         docker 'maven:3-alpine'
@@ -10,7 +11,7 @@ pipeline {
         }
     }
 }
-#!/usr/bin/env groovy
+
 // node {
 //     def commit_id
 //     stage('checkout') {
