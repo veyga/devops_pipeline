@@ -82,17 +82,17 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
-                post {
-                    always {
-                        // sh 'mkdir -p build/reports'
-                        // sh 'rm -rf build/reports/*'
-                        // sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
-                        // junit '**/target/surefire-reports/TEST-*.xml'
-                        // sh 'make check || true'
-                        // junit '**/target/*.xml'
-                        junit 'target/surefire-reports/*.xml'
-                    }
-                }
+                // post {
+                //     always {
+                //         // sh 'mkdir -p build/reports'
+                //         // sh 'rm -rf build/reports/*'
+                //         // sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
+                //         // junit '**/target/surefire-reports/TEST-*.xml'
+                //         // sh 'make check || true'
+                //         // junit '**/target/*.xml'
+                //         junit 'target/surefire-reports/*.xml'
+                //     }
+                // }
         }
 
         stage('Package'){
