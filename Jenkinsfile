@@ -4,7 +4,7 @@ pipeline {
 
     stages {
         
-        stage('checkout') {
+        stage('Checkout') {
             steps {
                 checkout scm
                 sh "git rev-parse --short HEAD > .git/commit-id"
@@ -12,32 +12,31 @@ pipeline {
             }
         }
 
-        stage('clean'){
+        stage('Clean'){
             steps {
                 sh "mvn test"
             }
         }
 
-        stage('tests') {
+        stage('Test') {
             steps {
-                try {
-                    sh "mvn test"
-                } catch(err) {
-                    throw err
-                } finally {
-                    junit '**/target/surefire-reports/TEST-*.xml'
-                }
+                sh 'mvn test'
             }
+                post {
+                    always {
+                        junit '**/target/surefire-reports/TEST-*.xml'
+                    }
+                }
         }
 
-        stage("packaging"){
+        stage('Package'){
             steps{
                     sh "mvn verify -Pprod -DskipTests"
                     archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
             } 
         }
 
-        stage('code analysis') {
+        stage('Code Analysis') {
             steps {
                 withSonarQubeEnv('Sonar') {
                     sh "mvn sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
@@ -45,7 +44,7 @@ pipeline {
             }
         }
 
-        stage('docker build/push'){
+        stage('Docker Build/Push'){
             steps{
                 docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
                     sh "cp -R src/main/docker target/"
@@ -55,6 +54,7 @@ pipeline {
             }
         }
     
+
     } //end of stages
 } //end of pipeline
 
