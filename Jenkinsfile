@@ -1,13 +1,14 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent {
-        docker 'maven:3-alpine'
-    }
+    agent { docker 'maven:3-alpine' }
 
     stages {
         
         stage('test') {
-            sh 'mvn clean test'
+            
+            steps {
+                sh 'mvn clean test'
+            }
         }
     }
 }
