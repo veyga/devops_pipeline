@@ -1,26 +1,51 @@
+#!/usr/bin/env groovy
 node {
-   def mvnHome
-   stage('Prepare') {
-      git url: 'git@github.com:astefanich/devops_pipeline.git', branch: 'develop'
-      mvnHome = tool 'maven'
-   }
-   stage('Build') {
-         sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
-   }
-   stage('Unit Test') {
-      junit '**/target/surefire-reports/TEST-*.xml'
-      archive 'target/*.jar'
-   }
-   stage('Integration Test') {
-        sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean verify"
-   }
-   stage('Sonar') {
-         sh "'${mvnHome}/bin/mvn' sonar:sonar"
-   }
-   stage('Deploy') {
-       sh 'curl -u jenkins:jenkins -T target/**.war "http://localhost:8888/manager/text/deploy?path=/devops&update=true"'
-   }
-   stage("Smoke Test"){
-       sh "curl --retry-delay 10 --retry 5 http://localhost:8888/devops"
-   }
+    stage('checkout') {
+        checkout scm
+    }
+
+    docker.image('openjdk:8').inside('-u root -e MAVEN_OPTS="-Duser.home=./"') {
+        stage('check java') {
+            sh "java -version"
+        }
+
+        stage('clean') {
+            sh "chmod +x mvnw"
+            sh "./mvnw clean"
+        }
+
+        stage('backend tests') {
+            try {
+                sh "./mvnw test"
+            } catch(err) {
+                throw err
+            } finally {
+                junit '**/target/surefire-reports/TEST-*.xml'
+            }
+        }
+
+        stage('packaging') {
+            sh "./mvnw verify -Pprod -DskipTests"
+            archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+        }
+
+        stage('quality analysis') {
+            withSonarQubeEnv('Sonar') {
+                sh "./mvnw sonar:sonar -Dsonar.host.url=http://192.241.210.80:9000"
+            }
+        }
+    }
+
+    def dockerImage
+    stage('build docker') {
+        sh "cp -R src/main/docker target/"
+        sh "cp target/*.war target/docker/"
+        dockerImage = docker.build('astefanich/bookingservice', 'target/docker')
+    }
+
+    stage('publish docker') {
+        docker.withRegistry('https://registry.hub.docker.com', 'astefanich') {
+            dockerImage.push 'latest'
+        }
+    }
 }
