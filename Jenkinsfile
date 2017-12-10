@@ -75,8 +75,8 @@ pipeline {
                     always {
                         sh 'mkdir -p build/reports'
                         sh 'rm -rf build/reports/*'
-                        sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
-                        // junit '**/target/surefire-reports/TEST-*.xml'
+                        // sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
+                        junit '**/target/surefire-reports/TEST-*.xml'
                     }
                 }
         }
