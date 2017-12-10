@@ -9,6 +9,7 @@
 	<artifactId>devops_pipeline</artifactId>
 	<version>1.0.0-RELEASE</version>
 	<packaging>war</packaging>
+	<!-- new comment -->
 
 	<name>devops_pipeline</name>
 	<description>experimenting with devops technologies</description>
@@ -47,11 +48,11 @@
 	</distributionManagement>
 
 	<dependencies>
-	<!-- <dependency>
-    <groupId>com.cedarsoft</groupId>
-    <artifactId>commons</artifactId>
-    <version>8.3.0</version>
-</dependency> -->
+		<dependency>
+    		<groupId>org.apache.commons</groupId>
+   			 <artifactId>commons-csv</artifactId>
+    		<version>1.5</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
