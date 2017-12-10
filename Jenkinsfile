@@ -96,15 +96,15 @@ pipeline {
             }
         }
 
-        node {
-            stage('docker build/push'){
-                docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
-                        sh "cp -R src/main/docker target/"
-                        sh "cp target/*.war target/docker/"
-                        def app = docker.build("astefanich/bookingservice:${commit_id}", 'target/docker').push()
-                }
-            }
-        }
+        // node {
+        //     stage('docker build/push'){
+        //         docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
+        //                 sh "cp -R src/main/docker target/"
+        //                 sh "cp target/*.war target/docker/"
+        //                 def app = docker.build("astefanich/bookingservice:${commit_id}", 'target/docker').push()
+        //         }
+        //     }
+        // }
 
     } //end of stages
 } //end of pipeline
