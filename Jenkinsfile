@@ -51,7 +51,12 @@
 
 // #!/usr/bin/env groovy
 pipeline {
-    agent { docker 'maven:3-alpine' }
+    agent { 
+            docker  {
+                image 'maven:3-alpine'
+                args '-v /root/.m2:/root/.m2'
+            }
+        }
 
     stages {
         
@@ -67,6 +72,12 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+
         stage('Test') {
             steps {
                 sh 'mvn test'
@@ -77,8 +88,9 @@ pipeline {
                         // sh 'rm -rf build/reports/*'
                         // sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
                         // junit '**/target/surefire-reports/TEST-*.xml'
-                        sh 'make check || true'
-                        junit '**/target/*.xml'
+                        // sh 'make check || true'
+                        // junit '**/target/*.xml'
+                        junit 'target/surefire-reports/*.xml'
                     }
                 }
         }
