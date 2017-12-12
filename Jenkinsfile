@@ -1,55 +1,4 @@
 #!/usr/bin/env groovy
-
-// node {
-//     stage('checkout') {
-//         checkout scm
-//     }
-
-//     docker.image('maven:3-alpine'){
-
-//         stage('clean') {
-//             sh "chmod +x mvnw"
-//             sh "./mvnw clean"
-//         }
-
-//         stage('backend tests') {
-//             try {
-//                 sh "./mvnw test"
-//             } catch(err) {
-//                 throw err
-//             } finally {
-//                 junit '**/target/surefire-reports/TEST-*.xml'
-//             }
-//         }
-
-//         stage('packaging') {
-//             sh "./mvnw verify -Pprod -DskipTests"
-//             archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
-//         }
-
-//         stage('quality analysis') {
-//             withSonarQubeEnv('Sonar') {
-//                 sh "./mvnw sonar:sonar"
-//             }
-//         }
-//     }
-
-//     def dockerImage
-//     stage('build docker') {
-//         sh "cp -R src/main/docker target/"
-//         sh "cp target/*.war target/docker/"
-//         dockerImage = docker.build('astefanich/handlingeventservice', 'target/docker')
-//     }
-
-//     stage('publish docker') {
-//         docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-//             dockerImage.push 'latest'
-//         }
-//     }
-// }
-
-
-// #!/usr/bin/env groovy
 pipeline {
     agent { 
             docker  {
@@ -82,17 +31,7 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
-                // post {
-                //     always {
-                //         // sh 'mkdir -p build/reports'
-                //         // sh 'rm -rf build/reports/*'
-                //         // sh 'docker cp JENKINS:build/reports **/target/surefire-reports/TEST-*.xml'
-                //         // junit '**/target/surefire-reports/TEST-*.xml'
-                //         // sh 'make check || true'
-                //         // junit '**/target/*.xml'
-                //         junit 'target/surefire-reports/*.xml'
-                //     }
-                // }
+               
         }
 
         stage('Package'){
@@ -109,16 +48,6 @@ pipeline {
                 }
             }
         }
-
-        // node {
-        //     stage('docker build/push'){
-        //         docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
-        //                 sh "cp -R src/main/docker target/"
-        //                 sh "cp target/*.war target/docker/"
-        //                 def app = docker.build("astefanich/bookingservice:${commit_id}", 'target/docker').push()
-        //         }
-        //     }
-        // }
 
     } //end of stages
 } //end of pipeline

@@ -9,7 +9,6 @@
 	<artifactId>devops_pipeline</artifactId>
 	<version>1.0.1-RELEASE</version>
 	<packaging>war</packaging>
-	<!-- new comment -->
 
 	<name>devops_pipeline</name>
 	<description>experimenting with devops technologies</description>
